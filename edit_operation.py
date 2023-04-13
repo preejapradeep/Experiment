@@ -124,7 +124,6 @@ def get_new_node(nodes, used_nodes, operation):
         print('\n rel operation:', operation, 'random node:',node, 'new_node', new_node, 'node_index', node_index)
 
     elif operation == 'deletion':
-        print('\nInside deletion')
         discard_nodes = ['r', 'f', 't']
         unused_control_nodes = [node for node in nodes if not node.startswith('/') and node not in used_nodes and node not in discard_nodes]
         print('unused_control_nodes',unused_control_nodes)
@@ -135,20 +134,15 @@ def get_new_node(nodes, used_nodes, operation):
 
         if not unused_nodes:
             operation = 'insertion'
-            operation, node_index, node, new_node = get_new_node(nodes, used_nodes, operation)   
-            print('\noperation del1:', operation, 'random node:',node, 'new_node', new_node)
+            operation, node_index, node, new_node = get_new_node(nodes, used_nodes, operation)
         elif not unused_control_nodes:
                 operation = np.random.choice(['replacement','insertion'])
                 operation, node_index, node, new_node = get_new_node(nodes, used_nodes, operation) 
-                print('\noperation del2:', operation, 'random node:',node, 'new_node', new_node)
         elif len(unused_control_nodes) == 1:
                     operation = 'insertion'
-                    operation, node_index, node, new_node = get_new_node(nodes, used_nodes, operation) 
-                    print('\noperation del3:', operation, 'random node:',node, 'node_index', node_index)  
+                    operation, node_index, node, new_node = get_new_node(nodes, used_nodes, operation)  
         else: 
-            operation = 'deletion'
-            print('\noperation del5:', operation, 'random node:',node, 'node_index', node_index)  
-
+            operation = 'deletion' 
     elif operation == 'insertion':
         new_node = random.choice(exp_nodes)
         node_index = None
@@ -159,23 +153,17 @@ def get_new_node(nodes, used_nodes, operation):
 
 
 def get_replacement_node(nodes, control_nodes):
-    print('control_nodes:', control_nodes)
     for i, control_set in enumerate(control_nodes):
-        print('i', i, 'control_set:', control_set)
         if control_set[0] in nodes:
-            print('control_set[0]:', control_set[0])
             if len(control_set) == 1:
                 continue
             if len(control_set) > 1 and len(control_set) >= 2 and control_set[1] not in nodes:
-                print('control_set[1]:', control_set[1])
                 return control_set[1]
         elif control_set[1] in nodes:
             if control_set[0] not in nodes:
-                print('control_set[0]:', control_set[0])
                 return control_set[0]
         else:
             return control_set[0]
-        print('control_nodes:', control_nodes[-1][1])
     return control_nodes[-1][1]
 
 def choose_random_operation(random_bt_prime, edits):
@@ -205,18 +193,12 @@ def choose_random_operation(random_bt_prime, edits):
             # Perform the replacement
             if node[0] == '/':
                 nodes[node_index] = new_node
-                print('\nreplacement: e - nodes:',nodes, 'adj:', adj,'\n')
             else:
                 if node in control_nodes:
                     replacement_node = get_replacement_node(nodes, control_nodes)
-                    print('replacement_node', replacement_node)
                     nodes[nodes.index(node)] = replacement_node
                     edge = [(e[0] if e[0] != node else replacement_node, e[1] if e[1] != node else replacement_node) for e in edge]
                     random_bt_prime['edge'] = edge
-                    print('\nc - nodes:',nodes, 'adj:',adj, 'edge:',edge,'\n')
-                
-            num_operations += 1
-
             # Add node and new_node to the set of used nodes
             # used_nodes.add(node)
             # used_nodes.add(new_node)
@@ -224,16 +206,13 @@ def choose_random_operation(random_bt_prime, edits):
         
         elif operation == 'deletion':  # Perform the deletion
             node = nodes[node_index]
-            print('\n del - node:', node, 'node_index:', node_index)
             # node is not the root
             if node_index != 1:
                 # Check whether it is a control node or explainer
                 if is_control_node(node, edge):
-                    print('node', node, adj)
                     parent_index = None
                     # parent_node, parent_index  = find_parent(node, edge)
                     for i, sublist in enumerate(adj):
-                        print('adj', node, adj, sublist, i)
                         if node_index in sublist:
                             parent_node = nodes[i]
                             parent_index = i
@@ -263,8 +242,6 @@ def choose_random_operation(random_bt_prime, edits):
                         updated_neighbors = [n - 1 if n > node_index else n for n in neighbors]
                         adj[i] = updated_neighbors
                     random_bt_prime['adj'] = adj
-                    print('\nLen:', len(nodes),len(adj))
-                    print('\ndel: explainer - nodes:',nodes, 'adj:',adj, '\n')
                     # Add node and node_index to the set of used nodes
                     # used_nodes.add(node)
                 else:
@@ -281,18 +258,19 @@ def choose_random_operation(random_bt_prime, edits):
                 parent_node = np.random.choice(list(set(c_nodes)))
                 if parent_node in nodes:
                     parent_index = nodes.index(parent_node)
-                    
+                    print('\nnew_node:', new_node, 'parent_node:', parent_node, 'parent_index:', parent_index)
                     # find position to insert new node in node list
-                    for i in range(parent_index + 1, len(nodes)):
-                        if nodes[i].startswith('/'):
-                            node_index_new = i
-                            nodes.insert(node_index_new, new_node)
-                            for i, node_adj in enumerate(adj):
-                                adj[i] = [idx + 1 if idx > parent_index else idx for idx in node_adj]
-                            adj[parent_index].append(node_index_new)
-                            # Insert an empty list at the node_index_new position in the adjacency list
-                            adj.insert(node_index_new, [])
-                            break
+                    parent_adjacency_list = adj[parent_index]
+                    first_node_index = parent_adjacency_list[0]
+                    first_node = nodes[first_node_index]
+                    node_index_new = first_node_index
+                    nodes.insert(node_index_new, new_node)
+                    for i, node_adj in enumerate(adj):
+                        adj[i] = [idx + 1 if idx > node_index_new - 1 else idx for idx in node_adj]
+                    # Add the new_node index in front of the first node in adj[parent_index]
+                    adj[parent_index].insert(0, node_index_new)
+                    # Insert an empty list at the node_index_new position in the adjacency list
+                    adj.insert(node_index_new, [])
                 else:
                     node_index_new = len(nodes)
                     nodes.append(new_node)
@@ -304,9 +282,7 @@ def choose_random_operation(random_bt_prime, edits):
                     edge.append((parent_node, new_node))
                     adj = ELtoAL(edge,nodes)
                     random_bt_prime['adj'] = adj
-                    print('insertion 2: e - nodes:',nodes, 'adj:',adj, 'edge:',edge,'\n')
                     # Add node and node_index to the set of used nodes
-                    # used_nodes.add(node_index_new)
                     # used_nodes.add(new_node)
             else:
                 # new node is a control node, insert as root or parent node
@@ -317,12 +293,9 @@ def choose_random_operation(random_bt_prime, edits):
                         if val >= node_index:
                             adj[i][j] += 1
                 edge.append((node, new_node))
-                print('insertion 3: c - nodes:',nodes, 'adj:',adj, 'edge:',edge,'\n')
                 # Add node and node_index to the set of used nodes
                 used_nodes.add(node_index)
                 used_nodes.add(new_node)
-            
-                num_operations += 1        
     else:
         return random_bt_prime, edits      
 
