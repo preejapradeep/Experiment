@@ -84,7 +84,7 @@ def ted_similarity(q,c,delta):
     dist = ted.ted(q["nodes"], q["adj"], c["nodes"], c["adj"],delta)
     # return dist
     maxdist = max(len(s1),len(s2))
-    return  (1-(dist/(maxdist*costs['insertion'])))
+    return (1-(dist/(maxdist*costs['insertion'])))
 
 # # TED computation
 # def editDistFunc(x_nodes, x_adj, y_nodes, y_adj,delta):
@@ -130,8 +130,6 @@ def dtw_similarity(q,c,delta):
     explainer_sequence(q,q["nodes"][0],q["adj"][0],s1)
     s2=[]
     explainer_sequence(c,c["nodes"][0],c["adj"][0],s2)
-    # if delta==None:
-    #     delta = default_dtw_distance
     dist = dtw.dtw(s1,s2,delta)
     # return dist
     maxdist = max(len(s1),len(s2))
@@ -166,7 +164,6 @@ def sequence_match_similarity(q,c,delta=None):
         else:
             sim += distance_factor * (1-delta(x,y))
     return sim/(maxdist*costs['insertion'])
-    # return dist
 
 # The overlap coefficient, or Szymkiewicz–Simpson coefficient
 def overlap_similarity(q,c,delta:None): #Shared explainers
@@ -176,7 +173,6 @@ def overlap_similarity(q,c,delta:None): #Shared explainers
         return 0
     else:
         return len(set(mq)&set(mc))/min(len(mq),len(mc)) 
-    # * distance_factor
 
 
 def compute_edit_distance(random_index, random_bt, random_bt_dict, case_base, case_base_dict, structural_similarity, similarity_metrics):    
@@ -212,16 +208,7 @@ def compute_edit_distance(random_index, random_bt, random_bt_dict, case_base, ca
                         score = overlap_similarity(bt,random_bt_prime, delta=semantic_delta)
                     elif algorithm == "Sequence Match":
                         score = sequence_match_similarity(bt,random_bt_prime, delta=semantic_delta)
-                    # if (score < 0) or (1-score) < 0:
-                    #     print("********************")
-                    #     print("Similarity: " + str(score))
-                    #     print("Edit distance: " + str(1-score))
-                    #     print(algorithm)
-                    #     print(metric)
-                    #     print(bt)
-                    #     print(random_bt_prime)
-                    #     print("********************")
-                    
+                        
                     results.loc[len(results.index)] = [random_bt, edits, operation, random_bt_prime, bt, algorithm, metric_name, 1-score]
 
         # Assign random_bt_prime to random_bt_p
