@@ -226,7 +226,6 @@ if __name__ == '__main__':
     similarity_metrics=["unweighted/common attributes.csv", "unweighted/cosine.csv", "unweighted/depth.csv","unweighted/detail.csv"]
 
     # Load case base from json file
-    # casebase300
     with open("casebase300.json", "r") as f:
         case_base = json.load(f)
 
@@ -276,8 +275,7 @@ if __name__ == '__main__':
 
         # create a dictionary to store the data frames for each sheet
         sheet_dict = {}
-
-        fig_num = 1
+        
         for i in range(len(all_results)):
             random_bt_dict = all_results[i][1]  # get the result_dict at index i
             
@@ -295,7 +293,6 @@ if __name__ == '__main__':
                 sheet_dict[key] = random_bt_results
                 # save filtered results to a csv file
                 random_bt_results.to_csv(folder_path + f'random_bt_{key}_results.csv', index=False)
-                # plt.show()
         
     end_time = time.time()
     computation_time = end_time - start_time
